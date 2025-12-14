@@ -30,6 +30,7 @@ export const en: MessageSchema = {
   indexCardLearning: {
     from: 'From:',
     to: 'To:',
+    shuffleCards: 'Shuffle Cards',
     activeCards: 'There are {count} active cards',
     languageOptions: {
       en: 'English',

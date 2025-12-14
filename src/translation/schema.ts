@@ -30,6 +30,7 @@ export type MessageSchema = {
   indexCardLearning: {
     from: string,
     to: string,
+    shuffleCards: string,
     activeCards: string,
     languageOptions: {
       en: string,

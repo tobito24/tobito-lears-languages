@@ -39,4 +39,5 @@ export const i18n = createI18n<[MessageSchema], AppLocale>({
 export function setLocale(locale: AppLocale) {
   const localeRef = i18n.global.locale as unknown as { value: AppLocale }
   localeRef.value = locale
+  document.title = i18n.global.t('ui.appTitle')
 }

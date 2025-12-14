@@ -5,6 +5,8 @@ import Select from 'primevue/select';
 import Divider from 'primevue/divider';
 import Carousel from 'primevue/carousel';
 import Badge from 'primevue/badge';
+import Tag from 'primevue/tag';
+import VocabCardSide from '@/components/VocabCardSide.vue'
 import { useVocab, type VocabItem } from '@/composables/useVocab'
 import { useI18n } from 'vue-i18n'
 
@@ -29,28 +31,6 @@ const shuffledVocab = ref<VocabItem[]>([])
 const isFlipped = ref<boolean[]>([])
 
 const hasCards = computed(() => !isLoading.value && !error.value && shuffledVocab.value.length > 0)
-const responsiveOptions = ref([
-    {
-        breakpoint: '1400px',
-        numVisible: 2,
-        numScroll: 1
-    },
-    {
-        breakpoint: '1199px',
-        numVisible: 3,
-        numScroll: 1
-    },
-    {
-        breakpoint: '767px',
-        numVisible: 2,
-        numScroll: 1
-    },
-    {
-        breakpoint: '575px',
-        numVisible: 1,
-        numScroll: 1
-    }
-]);
 
 watch(vocab, (newVocab) => {
     shuffledVocab.value = shuffle(newVocab)
@@ -117,31 +97,9 @@ function toggleFlip(id: number) {
             </div>
         </div>
         <Divider />
-        <p v-if="!isLoading" :class="[
-            'text-md',
-            'text-surface-950'
-        ]">
-            {{ t('indexCardLearning.activeCards', { count: vocab.length }) }}
-        </p>
-        <div v-else-if="isLoading && !error" :class="[
-            'text-md',
-            'text-surface-950'
-        ]">
-            {{ t('home.loadingVocab') }}
-        </div>
-        <div v-else-if="error" :class="[
-            'text-md',
-            'text-danger-600',
-        ]">
-            {{ t('home.errorLoadingVocab', { msg: error }) }}
-        </div>
-
-        <div v-if="hasCards" :class="[
-            'w-full',
-            'p-8',
-        ]">
-            <Carousel :value="shuffledVocab" :numVisible="3" :numScroll="1" :circular="true" :showIndicators="true"
-                :showNavigators="true" :responsiveOptions="responsiveOptions">
+        <div v-if="hasCards" :class="['w-full']">
+            <Carousel :value="shuffledVocab" :numVisible="1" :numScroll="1" :circular="true" :showIndicators="true"
+                :showNavigators="true">
                 <template #item="slotProps">
                     <Transition name="flip-card" mode="out-in">
                         <div :key="isFlipped[slotProps.data.id] ? 'card-back' : 'card-front'" :class="[
@@ -152,22 +110,54 @@ function toggleFlip(id: number) {
                             'p-4',
                             'm-2',
                         ]" @click="toggleFlip(slotProps.data.id)">
-                            <Badge :value="slotProps.data.id" />
-                            <div :class="[
-                                'p-6',
-                                'text-center',
-                                'text-2xl',
-                                'font-semibold',
-                            ]">
-                                {{ isFlipped[slotProps.data.id]
-                                    ? slotProps.data.translations[fromLanguage].text
-                                    : slotProps.data.translations[toLanguage].text
-                                }}
+                            <div :class="['flex', 'items-center', 'justify-between', 'mb-3']">
+                                <Badge :value="slotProps.data.id" />
+                                <div :class="['flex', 'gap-2', 'items-center']">
+                                    <Tag v-for="tag in slotProps.data.tags" :key="tag" :value="tag" rounded />
+                                    <Tag :value="slotProps.data.level" severity="info" rounded />
+                                </div>
                             </div>
+
+                            <!-- fromLanguage -->
+                            <VocabCardSide v-if="!isFlipped[slotProps.data.id]" :label="fromLanguage"
+                                :translation="slotProps.data.translations[fromLanguage]" />
+
+                            <!-- toLanguage -->
+                            <VocabCardSide v-else :label="toLanguage"
+                                :translation="slotProps.data.translations[toLanguage]" />
                         </div>
                     </Transition>
                 </template>
             </Carousel>
+        </div>
+        <Divider />
+        <div :class="[
+            'flex',
+            'items-center',
+            'justify-center',
+            'w-full',
+            'gap-4',
+        ]">
+            <p v-if="!isLoading" :class="[
+                'text-md',
+                'text-surface-950'
+            ]">
+                {{ t('indexCardLearning.activeCards', { count: vocab.length }) }}
+            </p>
+            <div v-else-if="isLoading && !error" :class="[
+                'text-md',
+                'text-surface-950'
+            ]">
+                {{ t('home.loadingVocab') }}
+            </div>
+            <div v-else-if="error" :class="[
+                'text-md',
+                'text-danger-600',
+            ]">
+                {{ t('home.errorLoadingVocab', { msg: error }) }}
+            </div>
+            <Button v-if="hasCards" :label="t('indexCardLearning.shuffleCards')" icon="pi pi-refresh" severity="info"
+                rounded @click="shuffledVocab = shuffle(vocab)" />
         </div>
     </div>
 </template>

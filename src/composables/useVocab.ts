@@ -2,7 +2,7 @@ import { computed, reactive } from 'vue'
 
 export interface VocabTranslation {
   text: string,
-  phoenetic?: string,
+  phonetic?: string,
   synonyms?: string[],
   examples?: string[]
 }

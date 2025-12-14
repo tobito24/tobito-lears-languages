@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp, watch } from 'vue'
 import App from './App.vue'
 import { i18n } from './translation/main'
 import { router } from './router'
@@ -22,5 +22,6 @@ app.use(PrimeVue, {
 });
 
 updatePrimaryPalette(palette(primaryColor.value) as PaletteDesignToken );
+document.title = i18n.global.t('ui.appTitle')
 
 app.mount('#app')
