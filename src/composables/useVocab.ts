@@ -21,14 +21,14 @@ export interface VocabItem {
 const VOCAB_URL =
   'https://raw.githubusercontent.com/tobito24/tobito-data/main/tobito-learns-languages/all-vocabulary.json'
 
-const state = reactive< {
+const state = reactive<{
   vocab: VocabItem[],
   isLoading: boolean,
   error: string | null
-}> ({
-  vocab:  [],
+}>({
+  vocab: [],
   isLoading: false,
-  error:null
+  error: null
 })
 
 export function useVocab() {
@@ -40,7 +40,7 @@ export function useVocab() {
       const res = await fetch(VOCAB_URL)
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
 
-      state.vocab = await res.json() as VocabItem[]        
+      state.vocab = await res.json() as VocabItem[]
     } catch (e: any) {
       state.error = e.message ?? 'Failed to load vocab'
     } finally {
@@ -48,10 +48,10 @@ export function useVocab() {
     }
   }
 
-  return { 
-    vocab: computed(() => state.vocab), 
-    isLoading: computed(() => state.isLoading), 
-    error: computed(() => state.error), 
-    loadVocab 
+  return {
+    vocab: computed(() => state.vocab),
+    isLoading: computed(() => state.isLoading),
+    error: computed(() => state.error),
+    loadVocab
   }
 }

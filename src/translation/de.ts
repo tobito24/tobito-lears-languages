@@ -15,7 +15,7 @@ export const de: MessageSchema = {
   settings: {
     title: 'Einstellungen',
     colorPicker: 'Wähle deine Lieblingsfarbe:',
-    currentColor: 'Aktuelle Farbe: #{color}',
+    currentColor: 'Aktuelle Farbe: {color}',
     test: 'Aktuelle Sprache: DE',
   },
   indexCardLearning: {

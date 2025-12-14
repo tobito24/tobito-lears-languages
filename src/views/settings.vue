@@ -1,24 +1,21 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref } from 'vue';
 import Button from "primevue/button";
 import ColorPicker from 'primevue/colorpicker';
 import { useI18n } from 'vue-i18n'
-import { updatePrimaryPalette, palette, dt } from '@primeuix/themes'
-import type { PaletteDesignToken } from '@primeuix/themes/types'
-import { setLocale } from '@/translation/main'
+import { DefaultValues } from '@/enums/default-values'
+import { useSettings } from '@/composables/useSettings';
 
 
 const { t } = useI18n()
 
-const initialPrimaryColor = (dt('primary.500', '#56070C', 'value') as string) ?? '#56070C';
-const color = ref<string>(initialPrimaryColor);
-watch(color, (newColor) => {
-    updatePrimaryPalette(palette(newColor) as PaletteDesignToken);
-});
+const { primaryColor, currentLanguage, setLanguage, setPrimaryColor } = useSettings();
+
+const color = ref<string>(primaryColor.value || DefaultValues.PRIMARY_COLOR);
+
 function languageSwitch() {
-    const newLocale = t('ui.currentLocale') === 'en' ? 'de' : 'en';
-    // TODO: setLocale does not yet update the displayed texts immediately
-    setLocale(newLocale);
+    const newLocale = currentLanguage.value === 'en' ? 'de' : 'en';
+    setLanguage(newLocale);
 }
 </script>
 
@@ -34,15 +31,22 @@ function languageSwitch() {
         ]">
             {{ t('settings.title') }}
         </p>
-        <Button :label="t('settings.test')" @click="languageSwitch"/>
+        <Button :label="t('settings.test')" @click="languageSwitch" />
         <div :class="[
             'flex',
             'gap-4',
             'items-center',
         ]">
-            <p>{{ t('settings.colorPicker') }}</p>
-            <ColorPicker v-model="color" inputId="cp-hex" format="hex" />
+            <p :class="[
+                'text-md',
+                'text-surface-800'
+            ]">{{ t('settings.colorPicker') }}</p>
+            <ColorPicker v-model="color" inputId="cp-hex" format="hex" @change="setPrimaryColor(color)" />
+            <i class="pi pi-angle-right" />
+            <p :class="[
+                'text-md',
+                'text-surface-800'
+            ]">{{ color }}</p>
         </div>
-        <p>{{ t('settings.currentColor', { color }) }}</p>
     </div>
 </template>

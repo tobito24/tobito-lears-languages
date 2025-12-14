@@ -7,6 +7,9 @@ import PrimeVue from 'primevue/config';
 import Aura from '@primeuix/themes/aura';
 import { updatePrimaryPalette, palette } from '@primeuix/themes'
 import type { PaletteDesignToken } from '@primeuix/themes/types'
+import { useSettings } from '@/composables/useSettings'
+
+const { primaryColor, currentLanguage } = useSettings();
 
 const app = createApp(App)
 
@@ -18,6 +21,6 @@ app.use(PrimeVue, {
     }
 });
 
-updatePrimaryPalette(palette('#56070C') as PaletteDesignToken );
+updatePrimaryPalette(palette(primaryColor.value) as PaletteDesignToken );
 
 app.mount('#app')

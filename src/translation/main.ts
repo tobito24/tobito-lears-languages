@@ -3,11 +3,12 @@ import type { MessageSchema } from './schema'
 import { en } from './en'
 import { de } from './de'
 
-const supported = ['en', 'de'] as const
-export type AppLocale = typeof supported[number]
-export const supportedLocales = supported
+export const supportedLanguages = ['en', 'de'] as const;
+export const fallbackLocale = 'en';
+export type AppLocale = typeof supportedLanguages[number];
+export const supportedLocales = supportedLanguages;
 
-function detectLocale(supportedLocales: readonly AppLocale[], fallback: AppLocale = 'en'): AppLocale {
+function detectLocale(supportedLocales: readonly AppLocale[], fallback: AppLocale = fallbackLocale): AppLocale {
   const candidates = Array.isArray(navigator.languages) && navigator.languages.length
     ? navigator.languages
     : [navigator.language]
@@ -20,12 +21,12 @@ function detectLocale(supportedLocales: readonly AppLocale[], fallback: AppLocal
   return fallback
 }
 
-const initialLocale: AppLocale = detectLocale(supported, 'en')
+const initialLocale: AppLocale = detectLocale(supportedLanguages, fallbackLocale)
 
 export const i18n = createI18n<[MessageSchema], AppLocale>({
   legacy: false,
   locale: initialLocale,
-  fallbackLocale: 'en',
+  fallbackLocale: fallbackLocale,
   messages: {
     en,
     de,
