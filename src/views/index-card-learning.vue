@@ -12,16 +12,22 @@ const toLanguage = 'de'
 </script>
 
 <template>
-    <br>
-    {{ fromLanguage }} {{ t('ui.arrow') }} {{ toLanguage }}
-    <br>
-    <div>{{ t('ui.vocabCount', { count: vocab.length }) }}</div>
-    <br>
-    <div v-if="isLoading">{{ t('ui.loading') }}</div>
-    <div v-else-if="error">{{ t('ui.error', { msg: error }) }}</div>
-    <ul v-else>
-        <li v-for="item in vocab" :key="item.id">
-            {{ item.translations[fromLanguage].text }} — {{ item.translations[toLanguage].text }}
-        </li>
-    </ul>
+    <div :class="[
+        'flex',
+        'flex-col',
+        'gap-4',
+    ]">
+        <br>
+        {{ fromLanguage }} {{ t('ui.arrow') }} {{ toLanguage }}
+        <br>
+        <div>{{ t('ui.vocabCount', { count: vocab.length }) }}</div>
+        <br>
+        <div v-if="isLoading">{{ t('ui.loading') }}</div>
+        <div v-else-if="error">{{ t('ui.error', { msg: error }) }}</div>
+        <ul v-else>
+            <li v-for="item in vocab" :key="item.id">
+                {{ item.translations[fromLanguage].text }} — {{ item.translations[toLanguage].text }}
+            </li>
+        </ul>
+    </div>
 </template>

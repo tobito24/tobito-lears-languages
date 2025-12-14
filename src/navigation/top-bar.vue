@@ -16,7 +16,6 @@ const { t } = useI18n()
         'p-4',
         'bg-surface-200',
         'shadow-2xl',
-        'mb-4',
     ]">
         <router-link to="/">
             <img src="@/img/logo.png" alt="Tobito Learns Languages Logo" :class="[
