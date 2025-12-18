@@ -14,7 +14,7 @@ export const de: MessageSchema = {
   home: {
     welcomeMessage: 'Willkommen bei Tobito lernt Sprachen!',
     getStartedMessage: 'Beginne jetzt mit dem Lernen neuer Vokabeln.',
-    currentVocabCount: 'Aktuellee Vokabelanzahl: {count}',
+    currentVocabCount: 'Aktuelle Vokabelanzahl: {count}',
     loadingVocab: 'Lade Vokabeln…',
     errorLoadingVocab: 'Fehler beim Laden der Vokabeln: {msg}',
   },
@@ -31,8 +31,13 @@ export const de: MessageSchema = {
   indexCardLearning: {
     from: 'Von:',
     to: 'Zu:',
+    filterCards: 'Filter',
     shuffleCards: 'Karten mischen',
     activeCards: 'Es sind {count} Karten aktiv',
+    markCard: 'markieren',
+    unmarkCard: 'Markierung entfernen',
+    resetMarked: 'Alle markierten Karten zurücksetzen',
+    markedCards: 'Es sind {markedCount} / {allCount} Karten markiert',
     languageOptions: {
       en: 'Englisch',
       de: 'Deutsch',

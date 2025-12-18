@@ -8,12 +8,14 @@ import Badge from 'primevue/badge';
 import Tag from 'primevue/tag';
 import Popover from 'primevue/popover';
 import VocabCardSide from '@/components/VocabCardSide.vue'
+import { useSettings } from '@/composables/useSettings';
 import { useVocab, type VocabItem } from '@/composables/useVocab'
 import { useI18n } from 'vue-i18n'
 
-const { t } = useI18n()
+const { t } = useI18n();
 
-const { vocab, isLoading, error } = useVocab()
+const { vocab, isLoading, error } = useVocab();
+const { toggleMarkedVocabItemId, isVocabItemIdMarked, resetMarkedVocabItemIds, markedVocabItemIds } = useSettings();
 
 type LangCode = 'en' | 'de' | 'es';
 
@@ -25,22 +27,18 @@ const languageOptions = [
 
 const fromLanguage = ref<LangCode>('en');
 const toLanguage = ref<LangCode>('es');
-const isLanguageIconSwapped = ref(false)
+const isLanguageIconSwapped = ref(false);
 
+const activeVocabs = ref<VocabItem[]>([]);
+const isFlipped = ref<{ [key: number]: boolean }>({});
+const hasCards = computed(() => !isLoading.value && !error.value && activeVocabs.value.length > 0);
 
-const shuffledVocab = ref<VocabItem[]>([])
-const isFlipped = ref<boolean[]>([])
+const activePage = ref(0);
+const currentItem = computed(() => activeVocabs.value[activePage.value] ?? null);
 
-const hasCards = computed(() => !isLoading.value && !error.value && shuffledVocab.value.length > 0)
-
-const popoverRef = ref()
-const popoverTags = ref<string[]>([])
-const popoverLanguageLevel = ref<string>('')
-
-watch(vocab, (newVocab) => {
-    shuffledVocab.value = shuffle(newVocab)
-    isFlipped.value = Array(newVocab.length).fill(false)
-}, { immediate: true })
+const popoverRef = ref();
+const popoverTags = ref<string[]>([]);
+const popoverLanguageLevel = ref<string>('');
 
 function shuffle(list: VocabItem[]): VocabItem[] {
     const arr = [...list]
@@ -70,6 +68,31 @@ function togglePopoverTags(event: Event, item: VocabItem) {
     popoverLanguageLevel.value = item.level
     popoverRef.value?.toggle(event)
 }
+
+function onShuffle() {
+    activeVocabs.value = shuffle(vocab.value)
+    isFlipped.value = activeVocabs.value.reduce((acc, item) => {
+        acc[item.id] = false
+        return acc
+    }, {} as { [key: number]: boolean })
+}
+
+// TODO: Filter for tags, levels and marked status
+function onFilter() {
+    const filtered = vocab.value.filter(item => isVocabItemIdMarked(item.id))
+    console.log(filtered.length);
+
+    activeVocabs.value = shuffle(filtered)
+    isFlipped.value = activeVocabs.value.reduce((acc, item) => {
+        acc[item.id] = false
+        return acc
+    }, {} as { [key: number]: boolean })
+    activePage.value = 0
+}
+
+watch(vocab, () => {
+    onShuffle()
+}, { immediate: true })
 </script>
 
 <template>
@@ -84,7 +107,7 @@ function togglePopoverTags(event: Event, item: VocabItem) {
             'items-center',
             'justify-center',
             'gap-4',
-            'w-full'
+            'w-full',
         ]">
             <div>
                 <p :class="[
@@ -110,14 +133,15 @@ function togglePopoverTags(event: Event, item: VocabItem) {
         </div>
         <Divider />
         <div v-if="hasCards" :class="['w-full']">
-            <Carousel :value="shuffledVocab" :numVisible="1" :numScroll="1" :circular="true"
-                :showIndicators="shuffledVocab.length < 20" :showNavigators="true">
+            <Carousel v-model:page="activePage" :value="activeVocabs" :numVisible="1" :numScroll="1" :circular="true"
+                :showIndicators="activeVocabs.length < 20" :showNavigators="true">
                 <template #item="slotProps">
                     <Transition name="flip-card" mode="out-in">
                         <div :key="isFlipped[slotProps.data.id] ? 'card-back' : 'card-front'" :class="[
                             'border-2',
                             isFlipped[slotProps.data.id] ? 'border-surface-300' : 'border-primary-300',
                             isFlipped[slotProps.data.id] ? 'bg-surface-100' : 'bg-surface-50',
+                            isVocabItemIdMarked(currentItem?.id) ? 'ring-4 ring-primary-300' : '',
                             'rounded-2xl',
                             'p-4',
                             'm-2',
@@ -156,33 +180,38 @@ function togglePopoverTags(event: Event, item: VocabItem) {
             </Popover>
         </div>
         <Divider />
-        <div :class="[
-            'flex',
+        <div v-if="hasCards" :class="[
+            'grid',
+            'grid-cols-2',
             'items-center',
             'justify-center',
             'w-full',
             'gap-4',
         ]">
-            <p v-if="!isLoading" :class="[
+            <Button :label="t('indexCardLearning.shuffleCards')" icon="pi pi-refresh" severity="secondary" rounded
+                @click="onShuffle" />
+            <Button
+                :label="isVocabItemIdMarked(currentItem?.id) ? t('indexCardLearning.unmarkCard') : t('indexCardLearning.markCard')"
+                :icon="isVocabItemIdMarked(currentItem?.id) ? 'pi pi-star-fill' : 'pi pi-star'" rounded
+                severity="secondary" @click="toggleMarkedVocabItemId(currentItem?.id)" />
+
+            <p :class="[
                 'text-md',
-                'text-surface-950'
+                'text-surface-950',
+                'col-span-2',
+                'text-center',
             ]">
-                {{ t('indexCardLearning.activeCards', { count: vocab.length }) }}
+                {{
+                    t('indexCardLearning.markedCards', { allCount: vocab.length, markedCount: markedVocabItemIds.length })
+                }}
             </p>
-            <div v-else-if="isLoading && !error" :class="[
-                'text-md',
-                'text-surface-950'
-            ]">
-                {{ t('home.loadingVocab') }}
+            <div>
+
             </div>
-            <div v-else-if="error" :class="[
-                'text-md',
-                'text-danger-600',
-            ]">
-                {{ t('home.errorLoadingVocab', { msg: error }) }}
-            </div>
-            <Button v-if="hasCards" :label="t('indexCardLearning.shuffleCards')" icon="pi pi-refresh" severity="info"
-                rounded @click="shuffledVocab = shuffle(vocab)" />
+            <Button :label="t('indexCardLearning.filterCards')" icon="pi pi-filter" severity="secondary" rounded
+                @click="onFilter" />
+            <Button :label="t('indexCardLearning.resetMarked')" icon="pi pi-times" severity="danger" rounded
+                @click="resetMarkedVocabItemIds()" class="col-span-2" />
         </div>
     </div>
 </template>

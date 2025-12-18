@@ -30,8 +30,13 @@ export type MessageSchema = {
   indexCardLearning: {
     from: string,
     to: string,
+    filterCards: string,
     shuffleCards: string,
     activeCards: string,
+    markCard: string,
+    unmarkCard: string,
+    resetMarked: string,
+    markedCards: string,
     languageOptions: {
       en: string,
       de: string,

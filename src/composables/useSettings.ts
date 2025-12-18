@@ -9,11 +9,13 @@ const STORAGE_KEY = 'tls-settings'
 export type Settings = {
     language: AppLocale | null
     primaryColor: string
+    markedVocabItemIds: number[] // TODO: if more settings are added, consider moving this to its own storage key
 }
 
 const defaultSettings: Settings = {
     language: null,
     primaryColor: DefaultValues.PRIMARY_COLOR,
+    markedVocabItemIds: [],
 }
 
 const state = reactive<Settings>(loadFromStorage())
@@ -54,10 +56,37 @@ export function useSettings() {
         updateLocalStorage();
     }
 
+    function toggleMarkedVocabItemId(id?: number) {
+        if (id === undefined) return;
+        if (!state.markedVocabItemIds.includes(id)) {
+            state.markedVocabItemIds.push(id);
+        }
+        else if (state.markedVocabItemIds.includes(id)) {
+            state.markedVocabItemIds = state.markedVocabItemIds.filter(
+                (itemId) => itemId !== id
+            );
+        }
+        updateLocalStorage();
+    }
+
+    function isVocabItemIdMarked(id?: number): boolean {
+        if (id === undefined) return false;
+        return state.markedVocabItemIds.includes(id);
+    }
+
+    function resetMarkedVocabItemIds() {
+        state.markedVocabItemIds = [];
+        updateLocalStorage();
+    }
+
     return {
         currentLanguage: computed(() => state.language),
         primaryColor: computed(() => state.primaryColor),
+        markedVocabItemIds: computed(() => state.markedVocabItemIds),
         setLanguage,
-        setPrimaryColor
+        setPrimaryColor,
+        toggleMarkedVocabItemId,
+        isVocabItemIdMarked,
+        resetMarkedVocabItemIds,
     }
 }
