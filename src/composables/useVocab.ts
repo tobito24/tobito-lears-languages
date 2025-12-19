@@ -1,26 +1,26 @@
-import { computed, reactive } from 'vue'
-import { useStorageData } from '@/composables/useStorage'
+import { computed, reactive } from 'vue';
+import { useStorageData } from '@/composables/useStorage';
 
 export interface VocabTranslation {
-  text: string,
-  phonetic?: string,
-  synonyms?: string[],
-  examples?: string[]
+  text: string;
+  phonetic?: string;
+  synonyms?: string[];
+  examples?: string[];
 }
 
 export interface VocabItem {
-  id: number,
+  id: number;
   translations: {
-    en: VocabTranslation,
-    de: VocabTranslation,
-    es: VocabTranslation
-  }
-  tags: string[],
-  level: string,
+    en: VocabTranslation;
+    de: VocabTranslation;
+    es: VocabTranslation;
+  };
+  tags: string[];
+  level: string;
 }
 
 const VOCAB_URL =
-  'https://raw.githubusercontent.com/tobito24/tobito-data/main/tobito-learns-languages/all-vocabulary.json'
+  'https://raw.githubusercontent.com/tobito24/tobito-data/main/tobito-learns-languages/all-vocabulary.json';
 
 const state = reactive<{
   allVocabs: VocabItem[],
@@ -32,9 +32,9 @@ const state = reactive<{
   activeVocabs: [],
   isLoading: false,
   error: null
-})
+});
 
-const storage = useStorageData()
+const storage = useStorageData();
 
 export function useVocab() {
   const loadVocab = async () => {
@@ -45,21 +45,24 @@ export function useVocab() {
       const res = await fetch(VOCAB_URL);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-      state.allVocabs = await res.json() as VocabItem[];
-      state.activeVocabs = [...state.allVocabs];  
-    } catch (e: any) {
-      state.error = e.message ?? 'Failed to load vocab'
+      // TODO: Add schema validation here later
+      const raw = await res.json();
+
+      state.allVocabs = raw;
+      state.activeVocabs = [...state.allVocabs];
+    } catch (e: unknown) {
+      state.error = e instanceof Error ? e.message : 'Failed to load vocab';
     } finally {
-      state.isLoading = false
+      state.isLoading = false;
     }
-  }
+  };
 
   const filterActiveVocabs = () => {
     // TODO: Add more filtering options in the future
     state.activeVocabs = state.allVocabs.filter(item =>
       isVocabItemIdMarked(item.id)
     );
-  }
+  };
 
   const shuffleActiveVocabs = () => {
     for (let i = state.activeVocabs.length - 1; i > 0; i--) {
@@ -68,7 +71,7 @@ export function useVocab() {
       state.activeVocabs[i] = state.activeVocabs[j]!;
       state.activeVocabs[j] = temp!;
     }
-  }
+  };
 
   function toggleMarkedVocabItemId(id?: number) {
     if (id === undefined) return;
@@ -103,5 +106,5 @@ export function useVocab() {
     toggleMarkedVocabItemId,
     isVocabItemIdMarked,
     markedVocabItemIdsLength: computed(() => storage.markedVocabItemIds.value.length)
-  }
+  };
 }

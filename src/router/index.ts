@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/home-view.vue'
 import IndexCardLearning from '@/views/index-card-learning.vue'
-import Settings from '@/views/settings.vue'
+import Settings from '@/views/settings-view.vue'
 
 export const router = createRouter({
   history: createWebHistory(),

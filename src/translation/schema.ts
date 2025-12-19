@@ -1,5 +1,3 @@
-import type IndexCardLearning from "@/views/index-card-learning.vue"
-
 export type MessageSchema = {
   ui: {
     appTitle: string,

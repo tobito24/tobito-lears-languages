@@ -2,29 +2,29 @@
 import { ref, watch, computed } from 'vue';
 import ColorPicker from 'primevue/colorpicker';
 import Select from 'primevue/select';
-import { useI18n } from 'vue-i18n'
-import { DefaultValues } from '@/enums/default-values'
+import Divider from 'primevue/divider';
+import { useI18n } from 'vue-i18n';
+import { DefaultValues } from '@/enums/default-values';
 import { useSettings } from '@/composables/useSettings';
 import { supportedLocales, fallbackLocale, type AppLocale } from '@/translation/locales';
-import { Divider } from 'primevue';
 
-const { t } = useI18n()
+const { t } = useI18n();
 
 const { primaryColor, currentLanguage, setLanguage, setPrimaryColor } = useSettings();
 
 const color = ref<string>(primaryColor.value || DefaultValues.PRIMARY_COLOR);
 
 const languageOptions = computed(() =>
-    supportedLocales.map((lang) => ({
-        label: t(`settings.languageOptions.${lang}`),
-        value: lang as AppLocale,
-    }))
+  supportedLocales.map((lang) => ({
+    label: t(`settings.languageOptions.${lang}`),
+    value: lang as AppLocale,
+  }))
 );
 
 const selectedLanguage = ref<AppLocale>((currentLanguage.value ?? fallbackLocale) as AppLocale);
 
 watch(selectedLanguage, (newLocale) => {
-    setLanguage(newLocale);
+  setLanguage(newLocale);
 });
 </script>
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import Tag from 'primevue/tag'
 import type { VocabTranslation } from '@/composables/useVocab'
 
