@@ -31,12 +31,10 @@ export const de: MessageSchema = {
   indexCardLearning: {
     from: 'Von:',
     to: 'Zu:',
-    filterCards: 'Filter',
-    shuffleCards: 'Karten mischen',
+    loadingCards: 'Lade Karten…',
+    errorLoadingCards: 'Fehler beim Laden der Karten: {msg}',
+    noActiveCards: 'Keine aktiven Karten, bitte passe deine Filter an.',
     activeCards: 'Es sind {count} Karten aktiv',
-    markCard: 'markieren',
-    unmarkCard: 'Markierung entfernen',
-    resetMarked: 'Alle markierten Karten zurücksetzen',
     markedCards: 'Es sind {markedCount} / {allCount} Karten markiert',
     languageOptions: {
       en: 'Englisch',

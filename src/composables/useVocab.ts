@@ -92,6 +92,7 @@ export function useVocab() {
 
   function resetMarkedVocabItemIds() {
     storage.setMarkedVocabItemIds([]);
+    state.activeVocabs = [...state.allVocabs];
   }
 
   return {

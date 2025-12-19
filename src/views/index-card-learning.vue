@@ -1,13 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import Button from 'primevue/button'
 import Select from 'primevue/select';
 import Divider from 'primevue/divider';
 import Carousel from 'primevue/carousel';
-import Badge from 'primevue/badge';
 import Tag from 'primevue/tag';
 import Popover from 'primevue/popover';
-import VocabCardSide from '@/components/VocabCardSide.vue'
+import VocabCard from '@/components/VocabCard.vue'
 import { useVocab, type VocabItem } from '@/composables/useVocab'
 import { useI18n } from 'vue-i18n'
 
@@ -39,7 +38,8 @@ const toLanguage = ref<LangCode>('es');
 const isLanguageIconSwapped = ref(false);
 
 const isFlipped = ref<{ [key: number]: boolean }>({});
-const hasCards = computed(() => !isLoading.value && !error.value && activeVocabs.value.length > 0);
+const hasMultipleCards = computed(() => activeVocabs.value.length > 1);
+const isSingleCard = computed(() => activeVocabs.value.length === 1);
 
 const activePage = ref(0);
 const currentItem = computed(() => activeVocabs.value[activePage.value] ?? null);
@@ -58,7 +58,6 @@ function swapLanguages() {
 }
 
 function toggleFlipCard(id: number) {
-    if (!hasCards.value) return
     isFlipped.value[id] = !isFlipped.value[id]
 }
 
@@ -85,6 +84,12 @@ function onFilter() {
     shuffleActiveVocabs();
     resetFlipCards();
 }
+
+watch(activeVocabs, (nextVocabs) => {
+    if (activePage.value >= nextVocabs.length) {
+        activePage.value = 0;
+    }
+});
 </script>
 
 <template>
@@ -126,106 +131,80 @@ function onFilter() {
 
         <Divider />
 
-        <div v-if="hasCards" :class="['w-full']">
+        <div v-if="hasMultipleCards" :class="['w-full']">
             <Carousel v-model:page="activePage" :value="activeVocabs" :numVisible="1" :numScroll="1" :circular="true"
                 :showIndicators="activeVocabs.length < 20" :showNavigators="true">
                 <template #item="slotProps">
-                    <Transition name="flip-card" mode="out-in">
-                        <div :key="isFlipped[slotProps.data.id] ? 'card-back' : 'card-front'" :class="[
-                            'border-2',
-                            isFlipped[slotProps.data.id] ? 'border-surface-300' : 'border-primary-300',
-                            isFlipped[slotProps.data.id] ? 'bg-surface-100' : 'bg-surface-50',
-                            isVocabItemIdMarked(currentItem?.id) ? 'ring-4 ring-primary-300' : '',
-                            'rounded-2xl',
-                            'p-4',
-                            'm-2',
-                            'w-60',
-                            'sm:w-full',
-                            'mx-auto',
-                        ]" @click="toggleFlipCard(slotProps.data.id)">
-                            <div :class="['flex', 'items-center', 'justify-between', 'mb-3']">
-                                <Badge :value="slotProps.data.id" />
-                                <div :class="['hidden', 'sm:flex', 'gap-2', 'items-center']">
-                                    <Tag v-for="tag in slotProps.data.tags" :key="tag" :value="tag" rounded />
-                                    <Tag :value="slotProps.data.level" severity="info" rounded />
-                                </div>
-                                <div :class="['flex', 'sm:hidden', 'items-center']">
-                                    <Button icon="pi pi-tags" text rounded
-                                        @click.stop="togglePopoverTags($event, slotProps.data)" />
-                                </div>
-                            </div>
-
-                            <!-- fromLanguage -->
-                            <VocabCardSide v-if="!isFlipped[slotProps.data.id]" :label="fromLanguage"
-                                :translation="slotProps.data.translations[fromLanguage]" />
-
-                            <!-- toLanguage -->
-                            <VocabCardSide v-else :label="toLanguage"
-                                :translation="slotProps.data.translations[toLanguage]" />
-                        </div>
-                    </Transition>
+                    <VocabCard :item="slotProps.data" :from-language="fromLanguage" :to-language="toLanguage"
+                        :is-flipped="isFlipped[slotProps.data.id] ?? false"
+                        :is-marked="isVocabItemIdMarked(currentItem?.id)" @toggle-flip="toggleFlipCard"
+                        @toggle-tags="togglePopoverTags" />
                 </template>
             </Carousel>
-            <Popover ref="popoverRef">
-                <div :class="['flex', 'flex-wrap', 'gap-2']">
-                    <Tag v-for="tag in popoverTags" :key="tag" :value="tag" rounded />
-                    <Tag :value="popoverLanguageLevel" severity="info" rounded />
-                </div>
-            </Popover>
         </div>
+        <div v-else-if="isSingleCard && currentItem" :class="['flex', 'justify-center']">
+            <VocabCard :item="currentItem" :from-language="fromLanguage" :to-language="toLanguage"
+                :is-flipped="isFlipped[currentItem.id] ?? false" :is-marked="isVocabItemIdMarked(currentItem.id)"
+                @toggle-flip="toggleFlipCard" @toggle-tags="togglePopoverTags" />
+        </div>
+        <div v-else :class="[
+            'flex',
+            'flex-col',
+            'items-center',
+            'justify-center',
+            'gap-4',
+            'w-full',
+            'p-4',
+        ]">
+            <p :class="[
+                'text-lg',
+                'text-surface-700',
+                'text-center',
+            ]" v-if="isLoading">{{ t('indexCardLearning.loadingCards') }}</p>
+            <p :class="[
+                'text-lg',
+                'text-surface-700',
+                'text-center',
+            ]" v-else-if="error">{{ t('indexCardLearning.errorLoadingCards') }}: {{ error }}</p>
+            <p :class="[
+                'text-lg',
+                'text-surface-700',
+                'text-center',
+            ]" v-else>{{ t('indexCardLearning.noActiveCards') }}</p>
+        </div>
+        <Popover ref="popoverRef">
+            <div :class="['flex', 'flex-wrap', 'gap-2']">
+                <Tag v-for="tag in popoverTags" :key="tag" :value="tag" rounded />
+                <Tag :value="popoverLanguageLevel" severity="info" rounded />
+            </div>
+        </Popover>
 
         <Divider />
 
-        <div v-if="hasCards" :class="[
+        <div :class="[
             'grid',
-            'grid-cols-2',
+            'grid-cols-4',
             'items-center',
             'justify-center',
+            'justify-items-center',
             'w-full',
             'gap-4',
         ]">
-            <Button :label="t('indexCardLearning.shuffleCards')" icon="pi pi-refresh" severity="secondary" rounded
-                @click="onShuffle" />
-            <Button
-                :label="isVocabItemIdMarked(currentItem?.id) ? t('indexCardLearning.unmarkCard') : t('indexCardLearning.markCard')"
-                :icon="isVocabItemIdMarked(currentItem?.id) ? 'pi pi-star-fill' : 'pi pi-star'" rounded
+            <Button icon="pi pi-times" severity="danger" rounded @click="resetMarkedVocabItemIds()" />
+            <Button icon="pi pi-filter" severity="secondary" rounded @click="onFilter" />
+            <Button icon="pi pi-sync" severity="secondary" rounded @click="onShuffle" />
+            <Button :icon="isVocabItemIdMarked(currentItem?.id) ? 'pi pi-star-fill' : 'pi pi-star'" rounded
                 severity="secondary" @click="toggleMarkedVocabItemId(currentItem?.id)" />
-
             <p :class="[
                 'text-md',
                 'text-surface-950',
-                'col-span-2',
+                'col-span-4',
                 'text-center',
             ]">
-                {{
-                    t('indexCardLearning.markedCards', { allCount: allVocabs.length, markedCount: markedVocabItemIdsLength })
-                }}
+                {{ t('indexCardLearning.markedCards', {
+                    allCount: allVocabs.length, markedCount: markedVocabItemIdsLength
+                }) }}
             </p>
-            <div>
-
-            </div>
-            <Button :label="t('indexCardLearning.filterCards')" icon="pi pi-filter" severity="secondary" rounded
-                @click="onFilter" />
-            <Button :label="t('indexCardLearning.resetMarked')" icon="pi pi-times" severity="danger" rounded
-                @click="resetMarkedVocabItemIds()" class="col-span-2" />
         </div>
     </div>
 </template>
-
-<style>
-.flip-card-enter-active,
-.flip-card-leave-active {
-    transition: transform 300ms ease, opacity 300ms ease;
-    transform-style: preserve-3d;
-}
-
-.flip-card-enter-from {
-    opacity: 0.1;
-    transform: rotateY(90deg);
-}
-
-.flip-card-leave-to {
-    opacity: 0.1;
-    transform: rotateY(-90deg);
-}
-</style>

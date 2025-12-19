@@ -30,12 +30,10 @@ export const en: MessageSchema = {
   indexCardLearning: {
     from: 'From:',
     to: 'To:',
-    filterCards: 'Filter',
-    shuffleCards: 'Shuffle Cards',
+    loadingCards: 'Loading cards…',
+    errorLoadingCards: 'Error loading cards: {msg}',
+    noActiveCards: 'No active cards, please adjust your filters.',
     activeCards: 'There are {count} active cards',
-    markCard: 'Mark',
-    unmarkCard: 'Unmark',
-    resetMarked: 'Reset all marked cards',
     markedCards: 'There are {markedCount} / {allCount} marked cards',
     languageOptions: {
       en: 'English',

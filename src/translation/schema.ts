@@ -28,12 +28,10 @@ export type MessageSchema = {
   indexCardLearning: {
     from: string,
     to: string,
-    filterCards: string,
-    shuffleCards: string,
+    loadingCards: string,
+    errorLoadingCards: string,
+    noActiveCards: string,
     activeCards: string,
-    markCard: string,
-    unmarkCard: string,
-    resetMarked: string,
     markedCards: string,
     languageOptions: {
       en: string,
